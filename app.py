@@ -17,9 +17,9 @@ tickers = list(THEME_MAP.values())
 raw_data = fetch_market_data(tickers)
 df_metrics = process_theme_metrics(raw_data, timeframe)
 
-# Güçlü ve Zayıf grupları ayırma
-df_strength = df_metrics[df_metrics["Mansfield_RS"] >= 0].sort_values(by="Mansfield_RS", ascending=True)
-df_weakness = df_metrics[df_metrics["Mansfield_RS"] < 0].sort_values(by="Mansfield_RS", ascending=False)
+# Dinamik Zaman Dilimi RS Değerine Göre Yeniden Sıralama (Re-sort)
+df_strength = df_metrics[df_metrics["RS"] >= 0].sort_values(by="RS", ascending=True)
+df_weakness = df_metrics[df_metrics["RS"] < 0].sort_values(by="RS", ascending=False)
 
 # İki sütunlu görünüm
 col1, col2 = st.columns(2)
