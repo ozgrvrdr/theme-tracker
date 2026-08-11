@@ -12,10 +12,11 @@ def apply_custom_styles():
 
 def render_chart(df, title, bar_color):
     fig = go.Figure()
-    labels = [f"{ret:+.2f}% | RS: {rs:+.1f}" for ret, rs in zip(df["Return"], df["Mansfield_RS"])]
+    # Etikette Nominal Getiri ve Seçilen Zaman Diliminin RS Değeri Gösterilir
+    labels = [f"{ret:+.2f}% | RS: {rs:+.1f}" for ret, rs in zip(df["Return"], df["RS"])]
     
     fig.add_trace(go.Bar(
-        x=df["Mansfield_RS"],
+        x=df["RS"],  # Bar uzunlukları dinamik zaman dilimi RS değerine bağlandı
         y=df["Theme"],
         orientation='h',
         marker=dict(color=bar_color),
