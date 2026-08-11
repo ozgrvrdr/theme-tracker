@@ -4,15 +4,31 @@ import plotly.graph_objects as go
 def apply_custom_styles():
     st.markdown("""
         <style>
-            .stApp { background-color: #0b0e14; color: #ffffff; }
-            div.stButton > button { background-color: #1a1f2c; color: white; border: 1px solid #333a4d; border-radius: 6px; }
-            div.stButton > button:hover { border-color: #4f46e5; color: #4f46e5; }
+            .stApp { 
+                background-color: #0b0e14; 
+                color: #ffffff; 
+            }
+            div.stButton > button { 
+                background-color: #1a1f2c; 
+                color: white; 
+                border: 1px solid #333a4d; 
+                border-radius: 6px; 
+            }
+            div.stButton > button:hover { 
+                border-color: #4f46e5; 
+                color: #4f46e5; 
+            }
         </style>
     """, unsafe_allow_html=True)
 
 def render_chart(df, title, bar_color):
     fig = go.Figure()
-    labels = [f"{ret:+.2f}% | RS: {rs:+.1f}" for ret, rs in zip(df["Return"], df["RS"])]
+    
+    # Composite görünümü için özel etiket formatı, diğer zaman dilimleri için standart format
+    if "Composite" in title:
+        labels = [f"1M: {ret:+.2f}% | Comp: {rs:+.2f}" for ret, rs in zip(df["Return"], df["RS"])]
+    else:
+        labels = [f"{ret:+.2f}% | RS: {rs:+.1f}" for ret, rs in zip(df["Return"], df["RS"])]
     
     fig.add_trace(go.Bar(
         x=df["RS"],
