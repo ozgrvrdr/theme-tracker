@@ -6,7 +6,7 @@ def process_theme_metrics(data, timeframe):
     dates = data.index
     today = dates[-1]
     
-    # Zaman aralığı bakış penceresi
+    # Seçilen zaman dilimine göre başlangıç indeksini belirleme
     if timeframe == "Today":
         start_idx = -2
     elif timeframe == "1W":
@@ -22,6 +22,9 @@ def process_theme_metrics(data, timeframe):
         start_idx = -2
 
     spy_data = data[BENCHMARK]
+    # Seçilen zaman diliminde SPY getirisi
+    spy_ret = ((spy_data.iloc[-1] - spy_data.iloc[start_idx]) / spy_data.iloc[start_idx]) * 100
+
     results = []
 
     for theme, ticker in THEME_MAP.items():
@@ -30,20 +33,24 @@ def process_theme_metrics(data, timeframe):
             
         series = data[ticker]
         
-        # Yalın Getiri
+        # Seçilen zaman dilimindeki nominal getiri
         ret = ((series.iloc[-1] - series.iloc[start_idx]) / series.iloc[start_idx]) * 100
         
-        # Mansfield Relative Strength (RS) Hesabı
+        # Seçilen zaman dilimine özel Göreceli Güç (RS = Tema Getirisi - SPY Getirisi)
+        timeframe_rs = ret - spy_ret
+        
+        # Mansfield RS Hesabı (Genel Trend Bilgisi İçin)
         r_series = series / spy_data
         r_sma = r_series.rolling(window=MA_PERIOD).mean()
         mansfield_series = ((r_series / r_sma) - 1) * 100
-        mansfield_rs = mansfield_series.iloc[-1]
+        mansfield_rs_current = mansfield_series.iloc[-1]
 
         results.append({
             "Theme": theme,
             "Ticker": ticker,
             "Return": ret,
-            "Mansfield_RS": mansfield_rs
+            "RS": timeframe_rs,  # Dinamik zaman dilimi RS değeri
+            "Mansfield_RS": mansfield_rs_current
         })
         
     return pd.DataFrame(results)
