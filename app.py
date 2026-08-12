@@ -2,36 +2,63 @@ import streamlit as st
 from config import THEME_MAP
 from data_loader import fetch_market_data
 from analytics import process_theme_metrics, generate_portfolio_recommendation
-from ui import apply_custom_styles, render_chart, render_portfolio_cards
+from ui import apply_custom_styles, render_chart, render_portfolio_cards, render_kpi_header
 
-st.set_page_config(page_title="Visual Theme Tracker", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Money Rotation Tracker", layout="wide", initial_sidebar_state="collapsed")
 apply_custom_styles()
 
-st.title("Visual Theme Tracker")
-
-# Zaman dilimi seçici (Composite seçeneği eklendi)
-timeframe = st.radio("Timeframe", options=["Composite (Bileşik)", "Today", "1W", "1M", "3M", "YTD"], horizontal=True)
-
-# Veri yükleme ve işleme
+# Veri yükleme
 tickers = list(THEME_MAP.values())
 raw_data = fetch_market_data(tickers)
-df_metrics = process_theme_metrics(raw_data, timeframe)
 
-# Güçlü ve zayıf temaları ayırma
-df_strength = df_metrics[df_metrics["RS"] >= 0].sort_values(by="RS", ascending=True)
-df_weakness = df_metrics[df_metrics["RS"] < 0].sort_values(by="RS", ascending=False)
+# Tüm metriklerin hesaplanması
+# Sadece KPI için ilk başta geçici bir "1M" df'si yaratıyoruz
+df_base = process_theme_metrics(raw_data, "1M")
 
-# İki sütunlu grafik görünümü
-col1, col2 = st.columns(2)
+# Üst Header ve KPI Kartları
+render_kpi_header(df_base)
 
-with col1:
-    if not df_strength.empty:
-        st.plotly_chart(render_chart(df_strength, f"Strength (RS > 0) [{timeframe}]", "#3b82f6"), use_container_width=True)
+# Sekmelerin (Tabs) Oluşturulması
+tab1, tab2 = st.tabs(["Visual Theme Tracker", "RS Strength Matrix"])
 
-with col2:
-    if not df_weakness.empty:
-        st.plotly_chart(render_chart(df_weakness, f"Weakness (RS < 0) [{timeframe}]", "#ec4899"), use_container_width=True)
+with tab1:
+    # 1Y Seçeneği eklendi
+    timeframe = st.radio("Timeframe Selection", options=["Composite", "Today", "1W", "1M", "3M", "YTD", "1Y"], horizontal=True)
+    
+    # Seçilen zaman dilimine göre veriyi güncelle
+    df_metrics = process_theme_metrics(raw_data, timeframe)
+    
+    # Güçlü ve zayıf temaları ayırma
+    df_strength = df_metrics[df_metrics["RS"] >= 0].sort_values(by="RS", ascending=True)
+    df_weakness = df_metrics[df_metrics["RS"] < 0].sort_values(by="RS", ascending=False)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if not df_strength.empty:
+            # Yeşil renk kodu (#2ea043)
+            st.plotly_chart(render_chart(df_strength, f"Strength (RS > 0) [{timeframe}]", "#2ea043"), use_container_width=True)
+    with col2:
+        if not df_weakness.empty:
+            # Kırmızı renk kodu (#f85149)
+            st.plotly_chart(render_chart(df_weakness, f"Weakness (RS < 0) [{timeframe}]", "#f85149"), use_container_width=True)
+            
+    # Dinamik Portföy Dağılım Kartları
+    portfolio_df = generate_portfolio_recommendation(df_metrics)
+    render_portfolio_cards(portfolio_df)
 
-# Dinamik Portföy Dağılım Kartlarını Ekleme
-portfolio_df = generate_portfolio_recommendation(df_metrics)
-render_portfolio_cards(portfolio_df)
+with tab2:
+    st.markdown("### RS Strength Matrix (Relative Strength Scoreboard)")
+    
+    display_cols = ["Theme", "Ticker", "1W_RS", "1M_RS", "3M_RS", "YTD_RS", "1Y_RS", "Composite"]
+    df_display = df_base.sort_values(by="Composite", ascending=False)[display_cols]
+    
+    # Pandas Styler ile ısı haritası
+    styled_df = df_display.style.background_gradient(
+        cmap="RdYlGn", 
+        subset=["1W_RS", "1M_RS", "3M_RS", "YTD_RS", "1Y_RS", "Composite"]
+    ).format({
+        "1W_RS": "{:.2f}", "1M_RS": "{:.2f}", "3M_RS": "{:.2f}", 
+        "YTD_RS": "{:.2f}", "1Y_RS": "{:.2f}", "Composite": "{:.2f}"
+    })
+    
+    st.dataframe(styled_df, use_container_width=True, hide_index=True)
