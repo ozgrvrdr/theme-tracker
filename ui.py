@@ -25,7 +25,6 @@ def apply_custom_styles():
     """, unsafe_allow_html=True)
 
 def render_kpi_header(df):
-    # Metrik hesaplamaları
     top_rotation = df.sort_values(by="Composite", ascending=False).iloc[0]
     weakening = df.sort_values(by="1W_RS", ascending=True).iloc[0]
     
@@ -100,6 +99,6 @@ def render_portfolio_cards(portfolio_df):
                 <h3 style="margin: 6px 0; color: #ffffff; font-size: 20px;">{row['Ticker']}</h3>
                 <p style="margin: 0; color: #38bdf8; font-weight: 600; font-size: 13px;">{row['Tema']}</p>
                 <p style="margin-top: 8px; font-size: 11px; color: #94a3b8; min-height: 32px;">{row['Açıklama']}</p>
-                <span style="font-size: 10px; background-color: #2d3748; padding: 2px 6px; border-radius: 4px; color: #e2e8f0;">Bileşik RS: {row['Bileşik Skor']}</span>
+                <span style="font-size: 10px; background-color: #2d3748; padding: 2px 6px; border-radius: 4px; color: #e2e8f0;">Bileşik Skor: {row['Bileşik Skor']}</span>
             </div>
             """, unsafe_allow_html=True)
