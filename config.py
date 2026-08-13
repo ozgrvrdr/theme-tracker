@@ -16,8 +16,6 @@ THEME_MAP = {
 BENCHMARK = "SPY"
 MA_PERIOD = 50  # İhtiyaç halinde eklenecek hareketli ortalamalar için
 
-# config.py dosyasının sonuna eklenecek kısım
-
 # Bileşik Skor Ağırlıkları (Hızlı Rotasyon Optimizasyonu)
 WEIGHT_1W = 0.25  # Kısa vadeli ani momentum / Yeni para akışı (%25)
 WEIGHT_1M = 0.50  # Ana trend yönü ve rotasyon merkezi (%50)
