@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from config import THEME_MAP, BENCHMARK
+from config import THEME_MAP, BENCHMARK, WEIGHT_1W, WEIGHT_1M, WEIGHT_3M
 
 def get_timeframe_index(dates, timeframe):
     today = dates[-1]
@@ -58,8 +58,8 @@ def process_theme_metrics(data, timeframe):
         rs_ytd = (((series.iloc[-1] - series.iloc[idx_ytd]) / series.iloc[idx_ytd]) * 100) - spy_ret_ytd
         rs_1y = (((series.iloc[-1] - series.iloc[idx_1y]) / series.iloc[idx_1y]) * 100) - spy_ret_1y
 
-        # Bileşik Skor (Örn: 3M %40 + 1M %40 + 1W %20)
-        composite_score = (rs_3m * 0.40) + (rs_1m * 0.40) + (rs_1w * 0.20)
+        # Bileşik Skor (Hızlı Rotasyon Optimizasyonu)
+        composite_score = (rs_3m * WEIGHT_3M) + (rs_1m * WEIGHT_1M) + (rs_1w * WEIGHT_1W)
 
         results.append({
             "Theme": theme,
